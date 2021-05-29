@@ -7,4 +7,4 @@ assignees: ''
 
 ---
 
-Please go here and add the feature request there instead: https://github.com/muc-dev/linked/discussions
+Please go here and add the feature request there instead: https://github.com/lowwor/loop-habit/discussions

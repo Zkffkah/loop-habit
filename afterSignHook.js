@@ -12,7 +12,7 @@ module.exports = async function (params) {
 
     console.log('afterSign hook triggered', params);
 
-    let appId = 'design.lost.linked'
+    let appId = 'design.lost.loophabit'
 
     let appPath = path.join(params.appOutDir, `${params.packager.appInfo.productFilename}.app`);
     if (!fs.existsSync(appPath)) {

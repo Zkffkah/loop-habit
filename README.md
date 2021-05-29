@@ -1,20 +1,18 @@
-![Bildschirmfoto 2021-05-21 um 09 14 10](https://user-images.githubusercontent.com/5164617/119097398-f526b900-ba14-11eb-8570-d73a3c2533ab.png)
-![Project Status](https://img.shields.io/badge/🏷-v1.1.3-green)
-Linked allows you to write down your thoughts and ideas to link them with days. [Download your free copy now!](https://github.com/muc-dev/linked/releases)
+<h1 align="center">
+  <br>
+  Loop Habit
+  <br>
+</h1>
+<h4 align="center">Track your habit goal in your menu bar</h4>
 
-## Features
-📅 Add your thoughts based on days
+Inspired by [iSoron/uhabits](https://github.com/iSoron/uhabits) and [NerdyPepper/dijo](https://github.com/NerdyPepper/dijo), Loop Habit is a desktop menubar app that helps you 
+create and maintain good habits, allowing you to achieve your long-term goals. 
+It is completely ad-free and open source.
 
-🖼 Dark or light mode
+# ScreenShot
+![screenshot](./assets/screenshot1.png) 
+                                                                
 
-💻 Keyboard navigation between days `CTRL+SHIFT+ARROWS`
-
-💾 Files are forever yours, you can find them at `~/Documents/linked`
-
-### Coming soon
-⭐️ Rate your days
-
-🗓 Month overview
 
 # Install
 Download the latest release and run the app or
@@ -23,5 +21,5 @@ Download the latest release and run the app or
 - yarn
 - yarn electron:serve
 
-## 💖 Sponsor
-If you like the app, [please consider sponsoring me](https://github.com/sponsors/lostdesign) as it helps me a lot focus more on building opensource apps.
+# Credits
+Use [muc-dev/linked](https://github.com/muc-dev/linked) as an electron template

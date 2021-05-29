@@ -28,7 +28,7 @@ module.exports = {
           target: ["AppImage"]
         },
         publish: ['github'],
-        appId: 'design.lost.linked',
+        appId: 'design.lost.loophabit',
         afterSign: './afterSignHook.js'
       }
     }

@@ -1,16 +1,16 @@
 {
-  "name": "linked",
-  "version": "1.1.3",
+  "name": "loop-habit",
+  "version": "1.0.0",
   "keywords": [
     "journal",
     "calendar"
   ],
-  "description": "Link your thoughts to days.",
-  "author": "André Weller <info@lost.design> (https://lost.design/)",
+  "description": "Loop Habit Tracker.",
+  "author": "Lowwor <lowwor@lowwor.com> (https://lowwor.com/)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/muc-dev/linked"
+    "url": "https://github.com/lowwor/loop-habit"
   },
   "private": true,
   "scripts": {

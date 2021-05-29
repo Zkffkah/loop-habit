@@ -31,7 +31,7 @@ function createWindow() {
     minWidth: 450,
     maxWidth: 2050,
     height: 1000,
-    title: 'linked',
+    title: 'Loop Habit',
     backgroundColor: '#161616',
     webPreferences: {
       devTools: process.env.NODE_ENV === 'development',
@@ -272,7 +272,7 @@ ipcMain.handle('save-habit-file', (event, args) => {
  */
 const basePath = app.getPath('documents')
 const getFilePath = (year) => {
-  return `${basePath}/linked/${year}`
+  return `${basePath}/loop-habit/${year}`
 }
 
 const getDefaultData = () => {
