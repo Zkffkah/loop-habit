@@ -73,7 +73,7 @@ export default {
   watch: {
     today(newDate, oldDate) { //eslint-disable-line
       this.setDay(newDate)
-      this.loadFile()
+      // this.loadFile()
     }
   }
 }

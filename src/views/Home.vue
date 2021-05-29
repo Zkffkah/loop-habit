@@ -19,7 +19,7 @@
         <div class="overflow-y-auto h-800">
 
           <div
-            class="flex justify-end  space-x-1  dark:bg-black z-50 border-b border-gray-400 dark:border-gray-800 py-2 mr-8">
+            class="flex justify-end  space-x-1  dark:bg-black z-50 border-b border-gray-400 dark:border-gray-800 py-2 mx-8">
             <template v-for="date in getCurrentWeekDates()">
               <div :key="date.day"
                    class="flex justify-center items-center self-center text-center">
@@ -31,27 +31,38 @@
               </div>
             </template>
           </div>
-          <template v-for="habit in this.habitContent">
-            <!-- Day switcher -->
-            <div :key="habit.name"
-                 class="flex dark:bg-black justify-end items-center self-center text-center space-x-1 z-50 border-b border-gray-400 dark:border-gray-800 py-2 mr-8">
+          <template v-for="habitGroup in this.habitContent">
+            <div :key="habitGroup.groupName">
+              <div
+                class="flex justify-start items-center self-center text-center space-x-1 	mt-3 mx-2">
+              <span class="text-center w-20 font-thin text-xs text-gray-400">
+                {{ habitGroup.groupName }}
+              </span>
+              </div>
+              <template v-for="habit in habitGroup.items">
+                <!-- Day switcher -->
+                <div :key="habit.name"
+                     class="flex dark:bg-black justify-end items-center self-center  space-x-1 z-50 border-b border-gray-400 dark:border-gray-800 py-1.5 mx-8">
               <span
-                class="text-center w-20 rounded-lg font-black text-xs hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer "
+                class="text-left w-28 rounded-lg font-black text-xs  hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer "
               >
                 {{ habit.name }}
               </span>
 
-              <template v-for="date in getCurrentWeekDates()">
-                <div :key="date.day" class="flex-col justify-center items-center self-center text-center">
+                  <template v-for="date in getCurrentWeekDates()">
+                    <div :key="date.day" class="flex-col justify-center items-center self-center text-center">
                   <span
-                    class="flex justify-center items-center self-center text-center w-6 h-6 rounded-full font-black text-xs  cursor-pointer mx-1		"
-                    :class="{ 'bg-green-600 dark:bg-green-900 hover:bg-green-400 dark:hover:bg-green-700':getDateGoalStatus(date.isoDate, habit) ,
-                          'bg-red-600 dark:bg-red-900 hover:bg-red-400 dark:hover:bg-red-700':getDateGoalStatus(date.isoDate, habit)===false,
+                    class="flex justify-center items-center self-center text-center w-6 h-6 rounded-full font-black text-xs  cursor-pointer mx-1"
+                    :class="{ 'bg-teal-300 dark:bg-teal-300 hover:bg-teal-100 dark:hover:bg-teal-100':getDateGoalStatus(date.isoDate, habit) ,
+                          'bg-pink-500 dark:bg-pink-500 hover:bg-pink-300 dark:hover:bg-pink-300':getDateGoalStatus(date.isoDate, habit)===false,
                           'bg-transparent hover:bg-gray-200 dark:hover:bg-gray-800':getDateGoalStatus(date.isoDate, habit)===undefined
                 }"
                     :key="date.day"
                     @click="toggleDateGoalStatus(date.isoDate,habit)">
                 </span>
+                    </div>
+                  </template>
+
                 </div>
               </template>
             </div>

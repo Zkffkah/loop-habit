@@ -29,7 +29,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 450,
     minWidth: 450,
-    maxWidth: 2050,
+    maxWidth: isDevelopment? 1050:450,
     height: 1000,
     title: 'Loop Habit',
     backgroundColor: '#161616',

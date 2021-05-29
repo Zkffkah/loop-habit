@@ -56,7 +56,7 @@ export default {
     }
   },
   created() {
-    this.loadFile()
+    // this.loadFile()
     this.loadHabitFile()
   }
 }
