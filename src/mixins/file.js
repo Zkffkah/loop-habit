@@ -3,6 +3,7 @@ const { ipcRenderer } = require('electron')
 export default {
   data() {
     return {
+      habitContent: null,
       content: null,
       rating: null
     }
@@ -25,6 +26,21 @@ export default {
         this.rating = data.rating
       })
     },
+    saveHabitFile() {
+      ipcRenderer.invoke('save-file', [
+        this.formatDate('y'),
+        this.formatDate('y'),
+        this.habitContent
+      ])
+    },
+    loadHabitFile() {
+      ipcRenderer.invoke('load-file', [
+        this.formatDate('y'),
+        this.formatDate('y')
+      ]).then(data => {
+        this.habitContent = data.content
+      })
+    },
     debounce(func, wait) {
       let timeout;
 
@@ -41,5 +57,6 @@ export default {
   },
   created() {
     this.loadFile()
+    this.loadHabitFile()
   }
 }

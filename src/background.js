@@ -1,13 +1,18 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, nativeTheme, Tray, screen, Menu } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import { autoUpdater } from "electron-updater"
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const fs = require('fs')
+const path = require("path");
+const { platform } = require("os");
+
 let win
+let trayIcon = null;
+/* istanbul ignore next */
 
 //import * as Sentry from '@sentry/electron';
 //Sentry.init({ dsn: 'https://f12af54d6a3b4f00a7ec80e69cba835e@o559982.ingest.sentry.io/5695233' });
@@ -24,7 +29,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 450,
     minWidth: 450,
-    maxWidth: 450,
+    maxWidth: 2050,
     height: 1000,
     title: 'linked',
     backgroundColor: '#161616',
@@ -57,6 +62,75 @@ function createWindow() {
   })
 }
 
+const getTrayIconName = () =>
+  `./icon.png`;
+// const isWin = platform() === "win32";
+// const getWindowPosition = (window, tray) => {
+//   const trayBounds = tray.getBounds();
+//   const windowSize = window.getSize();
+//   const cursorPosition = screen.getCursorScreenPoint();
+//   const display = screen.getDisplayNearestPoint(cursorPosition);
+//   const displayArea = display.workArea;
+//
+//   if (isWin) {
+//     const horizontalPosition =
+//       displayArea.x + displayArea.width - windowSize[0];
+//     const verticalPosition = displayArea.y + displayArea.height - windowSize[1];
+//
+//     return [horizontalPosition, verticalPosition];
+//   } else {
+//     const trayCenter = trayBounds.x + trayBounds.width / 2;
+//     const horizontalPosition = trayCenter - windowSize[0] / 2;
+//     // The macOS implementation of Electron. Tray ceils trayBounds.y to zero
+//     // making it unreliable for vertically positioning the window.
+//     // Use the display's work area instead.
+//     const verticalPosition = displayArea.y + 5;
+//     const left = horizontalPosition + windowSize[0];
+//     const maxLeft = displayArea.width - 15;
+//
+//     // Check if window would be outside screen
+//     // If yes, make sure it isn't
+//     if (left > maxLeft) {
+//       return [horizontalPosition - left - maxLeft, verticalPosition];
+//     }
+//
+//     return [horizontalPosition, verticalPosition];
+//   }
+// };
+const toggleTray = (window, tray) => () => {
+  /* istanbul ignore next */
+
+  // const [horizontalPosition, verticalPosition] = getWindowPosition(
+  //   window,
+  //   tray
+  // );
+  //
+  // window.setPosition(horizontalPosition, verticalPosition);
+
+  if (window.isVisible()) {
+    window.hide();
+  } else {
+    window.show();
+  }
+};
+
+const configureTrayIcon = (window, trayIcon, menu) => {
+  const menuIconPath = path.join(__static, getTrayIconName());
+  console.log(menuIconPath)
+  trayIcon = new Tray(menuIconPath);
+
+  const toggleTrayWithContext = toggleTray(window, trayIcon);
+
+  trayIcon.setToolTip("Barnacal");
+
+  trayIcon.on("click", toggleTrayWithContext);
+  // trayIcon.on("double-click", toggleTrayWithContext);
+  // trayIcon.on("right-click", () => {
+  //   menu.popup(window);
+  // });
+
+};
+
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
@@ -87,6 +161,9 @@ app.on('ready', async () => {
     }
   }
   createWindow()
+  const menu = new Menu();
+  configureTrayIcon(win, trayIcon, menu);
+
 })
 
 // Exit cleanly on request from parent process in development mode.
@@ -150,6 +227,45 @@ ipcMain.handle('save-file', (event, args) => {
     }
   ))
 })
+
+ipcMain.handle('load-habit-file', async (event, args) => {
+  const [year, fileName] = args
+  const dataPath = getFilePath(year , fileName)
+  const filePath = `${dataPath}/${fileName}.json`
+  let file
+
+  // create the file if it does not exist yet
+  if (!fs.existsSync(filePath)) {
+    file = fs.promises.mkdir(dataPath, {recursive: true}).then(() => {
+      return fs.promises.writeFile(filePath, getDefaultData()).then(() => {
+        return fs.promises.readFile(filePath, 'utf-8').then((data) => {
+          return JSON.parse(data)
+        })
+      })
+    })
+  } else {
+    file = fs.promises.readFile(filePath, 'utf-8').then((data) => {
+      return JSON.parse(data)
+    })
+  }
+
+  // return the file
+  return file
+})
+
+ipcMain.handle('save-habit-file', (event, args) => {
+  console.log(content)
+  const [year, fileName, content] = args
+  const dataPath = getFilePath(year , fileName)
+  const filePath = `${dataPath}/${fileName}.json`
+
+  fs.promises.writeFile(filePath, JSON.stringify(
+    {
+      "content": content,
+    }
+  ))
+})
+
 
 /**
  * Construct the base path where files are stored and loaded from

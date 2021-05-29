@@ -36,7 +36,7 @@ export default {
 
       // TODO get locale from state
       for (let i = 0; i <= 6; i++) {
-        let day = startOfWeek.plus({days: i}).setLocale('de-DE')
+        let day = startOfWeek.plus({days: i}).setLocale('zh-CN')
         week.push(
           {
             isoDate: day.toISODate(),
@@ -46,6 +46,20 @@ export default {
         )
       }
       return week
+    },
+    getDateGoalStatus(date,habit){
+       return habit.stats[date]
+    },
+    toggleDateGoalStatus(date,habit){
+      if (habit.stats[date] == undefined) {
+        habit.stats[date] = true
+      } else if (habit.stats[date] === true) {
+        habit.stats[date] = false
+      } else if (habit.stats[date] === false) {
+        habit.stats[date] = undefined
+      }
+      this.saveHabitFile()
+      this.loadHabitFile()
     },
     /**
      * Format a date into any string.
