@@ -1,17 +1,15 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, nativeTheme, Tray, screen, Menu } from 'electron'
+import { app, protocol, ipcMain, nativeTheme } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import { autoUpdater } from "electron-updater"
+const { menubar } = require('menubar');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const fs = require('fs')
 const path = require("path");
-const { platform } = require("os");
 
-let win
-let trayIcon = null;
 /* istanbul ignore next */
 
 //import * as Sentry from '@sentry/electron';
@@ -24,134 +22,38 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
-function createWindow() {
-  // Create the browser window.
-  win = new BrowserWindow({
-    width: 450,
-    minWidth: 450,
-    maxWidth: isDevelopment? 1050:450,
-    height: 1000,
-    title: 'Loop Habit',
-    backgroundColor: '#161616',
-    webPreferences: {
-      devTools: process.env.NODE_ENV === 'development',
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true,
-    },
-  })
-
-  // Load the url of the dev server if in development mode
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
-  } else {
-    createProtocol('app')
-    // Load the index.html when not in development
-    win.loadURL('app://./index.html')
-
-    /**
-     * Will fire the autoupdater to check for new updates and notify the
-     * user. This only needs to happen when *NOT* in development mode.
-     */
-    autoUpdater.checkForUpdatesAndNotify()
-  }
-
-  win.on('closed', () => {
-    win = null
-  })
+const browserWindowOpts = {
+  width:  450,
+  height: 700,
+  minWidth: 450,
+  minHeight: 700,
+  resizable: false,
+  title: 'Loop Habit',
+  backgroundColor: '#161616',
+  webPreferences: {
+    devTools: process.env.NODE_ENV === 'development',
+    nodeIntegration: true,
+    contextIsolation: false,
+    enableRemoteModule: true,
+  },
 }
 
-const getTrayIconName = () =>
-  `./icon.png`;
-// const isWin = platform() === "win32";
-// const getWindowPosition = (window, tray) => {
-//   const trayBounds = tray.getBounds();
-//   const windowSize = window.getSize();
-//   const cursorPosition = screen.getCursorScreenPoint();
-//   const display = screen.getDisplayNearestPoint(cursorPosition);
-//   const displayArea = display.workArea;
-//
-//   if (isWin) {
-//     const horizontalPosition =
-//       displayArea.x + displayArea.width - windowSize[0];
-//     const verticalPosition = displayArea.y + displayArea.height - windowSize[1];
-//
-//     return [horizontalPosition, verticalPosition];
-//   } else {
-//     const trayCenter = trayBounds.x + trayBounds.width / 2;
-//     const horizontalPosition = trayCenter - windowSize[0] / 2;
-//     // The macOS implementation of Electron. Tray ceils trayBounds.y to zero
-//     // making it unreliable for vertically positioning the window.
-//     // Use the display's work area instead.
-//     const verticalPosition = displayArea.y + 5;
-//     const left = horizontalPosition + windowSize[0];
-//     const maxLeft = displayArea.width - 15;
-//
-//     // Check if window would be outside screen
-//     // If yes, make sure it isn't
-//     if (left > maxLeft) {
-//       return [horizontalPosition - left - maxLeft, verticalPosition];
-//     }
-//
-//     return [horizontalPosition, verticalPosition];
-//   }
-// };
-const toggleTray = (window, tray) => () => {
-  /* istanbul ignore next */
-
-  // const [horizontalPosition, verticalPosition] = getWindowPosition(
-  //   window,
-  //   tray
-  // );
-  //
-  // window.setPosition(horizontalPosition, verticalPosition);
-
-  if (window.isVisible()) {
-    window.hide();
-  } else {
-    window.show();
+const iconIdle = path.join(
+  __static,
+  'tray-idleTemplate.png'
+);
+const iconActive = path.join(__static, 'tray-active.png');
+const delayedHideAppIcon = () => {
+  if (app.dock && app.dock.hide) {
+    // Setting a timeout because the showDockIcon is not currently working
+    // See more at https://github.com/maxogden/menubar/issues/306
+    setTimeout(() => {
+      app.dock.hide();
+    }, 1500);
   }
 };
-
-const configureTrayIcon = (window, trayIcon, menu) => {
-  const menuIconPath = path.join(__static, getTrayIconName());
-  console.log(menuIconPath)
-  trayIcon = new Tray(menuIconPath);
-
-  const toggleTrayWithContext = toggleTray(window, trayIcon);
-
-  trayIcon.setToolTip("Barnacal");
-
-  trayIcon.on("click", toggleTrayWithContext);
-  // trayIcon.on("double-click", toggleTrayWithContext);
-  // trayIcon.on("right-click", () => {
-  //   menu.popup(window);
-  // });
-
-};
-
-// Quit when all windows are closed.
-app.on('window-all-closed', () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (win === null) {
-    createWindow()
-  }
-})
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
@@ -159,12 +61,61 @@ app.on('ready', async () => {
     } catch (e) {
       console.error('Vue Devtools failed to install:', e.toString())
     }
+  } else {
+    createProtocol('app')
   }
-  createWindow()
-  const menu = new Menu();
-  configureTrayIcon(win, trayIcon, menu);
+  const menubarApp = menubar({
+    icon: iconIdle,
+    index:   process.env.WEBPACK_DEV_SERVER_URL ? process.env.WEBPACK_DEV_SERVER_URL : 'app://./index.html',
+    browserWindow: browserWindowOpts,
+    preloadWindow: true,
+  });
 
+
+  menubarApp.on('ready',async () => {
+    delayedHideAppIcon();
+    menubarApp.tray.setIgnoreDoubleClickEvents(true);
+
+
+    autoUpdater.checkForUpdatesAndNotify();
+
+    ipcMain.on('reopen-window', () => menubarApp.showWindow());
+    ipcMain.on('app-quit', () => menubarApp.app.quit());
+    ipcMain.on('update-icon', (_, arg) => {
+      if (!menubarApp.tray.isDestroyed()) {
+        if (arg === 'TrayActive') {
+          menubarApp.tray.setImage(iconActive);
+        } else {
+          menubarApp.tray.setImage(iconIdle);
+        }
+      }
+    });
+
+    menubarApp.window.webContents.on('devtools-opened', () => {
+      menubarApp.window.setSize(1200, 700);
+      menubarApp.window.center();
+      menubarApp.window.resizable = true;
+    });
+
+    menubarApp.window.webContents.on('devtools-closed', () => {
+      const trayBounds = menubarApp.tray.getBounds();
+      menubarApp.window.setSize(
+        browserWindowOpts.width,
+        browserWindowOpts.height
+      );
+      menubarApp.positioner.move('trayCenter', trayBounds);
+      menubarApp.window.resizable = false;
+    });
+  });
+
+  menubarApp.on('after-create-window', () => {
+    if (isDevelopment) {
+      menubarApp.window.openDevTools()
+      menubarApp.window.setAlwaysOnTop(true)
+    }
+  })
 })
+
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
