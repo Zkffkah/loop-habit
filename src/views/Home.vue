@@ -15,6 +15,9 @@
               <ArrowRightIcon/>
             </span>
           </span>
+          <button @click="addHabitGroup('Group'+Math.floor(1000 + Math.random() * 9000),habitContent)">
+            <FolderPlusIcon/>
+          </button>
         </div>
         <div class="overflow-y-auto h-800">
 
@@ -22,10 +25,13 @@
             class="flex justify-end  space-x-1  dark:bg-black z-50 border-b border-gray-400 dark:border-gray-800 py-2 mx-8">
             <template v-for="date in getCurrentWeekDates()">
               <div :key="date.day"
-                   class="flex justify-center items-center self-center text-center">
+                   class="flex flex-col justify-center items-center self-center text-center">
               <span :class="{'text-indigo-400 dark:text-indigo-500':  getToday()=== date.isoDate }"
                     class="w-6  text-xs text-gray-400 dark:text-gray-700  justify-center items-center self-center text-center mx-1	">
                 {{ date.weekDay }}
+              </span>
+                <span :class="{'text-indigo-400 dark:text-indigo-500':  getToday()=== date.isoDate }"
+                      class="w-6  text-xs text-gray-400 dark:text-gray-700  justify-center items-center self-center text-center mx-1	">
                  {{ date.day }}
               </span>
               </div>
@@ -33,19 +39,49 @@
           </div>
           <template v-for="habitGroup in this.habitContent">
             <div :key="habitGroup.groupName">
-              <div
-                class="flex justify-start items-center self-center text-center space-x-1 	mt-3 mx-2">
-              <span class="text-center w-20 font-thin text-xs text-gray-400">
-                {{ habitGroup.groupName }}
-              </span>
+              <div class="flex justify-start items-center self-center text-center space-x-1 mt-3 mx-2">
+                <input
+                  class="dark:bg-black text-sm text-white w-20 "
+                  type="text"
+                  v-if="editingList[habitGroup.groupName]"
+                  :value="habitGroup.groupName"
+                  @blur="editingList[habitGroup.groupName] = false;changeHabitGroupName($event.target.value, habitGroup); "
+                  @keyup.enter="editingList[habitGroup.groupName] = false;changeHabitGroupName($event.target.value, habitGroup); "
+                  v-focus=""
+                />
+                <button v-if="editingList[habitGroup.groupName]"
+                        @mousedown="editingList[habitGroup.groupName] = false;removeGroup(habitGroup.groupName)">
+                  <TrashIcon/>
+                </button>
+                <span class="text-center w-20 font-thin text-xs text-gray-200" v-else="" @click="updateEditStatus(habitGroup.groupName);">
+                     {{ habitGroup.groupName }}
+                </span>
+                <button class="justify-self-end	text-gray-700"
+                        @mousedown="addHabit('habit'+Math.floor(1000 + Math.random() * 9000),habitGroup)">
+                  <PlusIcon/>
+                </button>
               </div>
               <template v-for="habit in habitGroup.items">
                 <!-- Day switcher -->
                 <div :key="habit.name"
                      class="flex dark:bg-black justify-end items-center self-center  space-x-1 z-50 border-b border-gray-400 dark:border-gray-800 py-1.5 mx-8">
-              <span
-                class="text-left w-28 rounded-lg font-black text-xs  hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer "
-              >
+                  <input
+                    class="dark:bg-black text-sm text-white w-28"
+                    type="text"
+                    v-if="editingList[habitGroup.groupName+habit.name]"
+                    :value="habit.name"
+                    @blur="changeHabitName($event.target.value, habit);  editingList[habitGroup.groupName+habit.name] = false;"
+                    @keyup.enter="changeHabitName($event.target.value, habit); editingList[habitGroup.groupName+habit.name] = false;"
+                    v-focus=""
+                  />
+                  <button v-if="editingList[habitGroup.groupName+habit.name]"
+                          @mousedown="editingList[habitGroup.groupName+habit.name] = false;removeHabit(habit.name,habitGroup)">
+                    <TrashIcon/>
+                  </button>
+                  <span
+                    class="text-left w-28 rounded-lg font-black text-xs  hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer "
+                    v-else="" @click="updateEditStatus(habitGroup.groupName+habit.name);"
+                  >
                 {{ habit.name }}
               </span>
 
@@ -73,7 +109,7 @@
       <!--      <div v-if="editor">-->
       <!--        <div class="px-10 mt-5 text-gray-400 dark:text-gray-500 relative">-->
       <!--          <bubble-menu class="bubble-menu" :editor="editor" v-if="editor">-->
-      <!--            <button @click="editor.chain().focus().toggleHighlight().run()"><PenIcon /></button>-->
+      <!--                  <button @click="editor.chain().focus().toggleHighlight().run()"><PenIcon /></button>-->
       <!--            <button @click="editor.chain().focus().toggleBold().run()"><BoldIcon /></button>-->
       <!--            <button @click="editor.chain().focus().toggleItalic().run()"><ItalicIcon /></button>-->
       <!--            <button @click="editor.chain().focus().toggleStrike().run()"><StrikeThroughIcon /></button>-->
@@ -102,6 +138,9 @@ import ArrowLeftIcon from '@/assets/icons/arrow-left.svg'
 import ArrowRightIcon from '@/assets/icons/arrow-right.svg'
 // import CodeIcon from '@/assets/icons/code.svg'
 // import PenIcon from '@/assets/icons/pen.svg'
+import FolderPlusIcon from '@/assets/icons/folder-plus.svg'
+import PlusIcon from '@/assets/icons/plus.svg'
+import TrashIcon from '@/assets/icons/trash.svg'
 // import BoldIcon from '@/assets/icons/bold.svg'
 // import ItalicIcon from '@/assets/icons/italic.svg'
 // import StrikeThroughIcon from '@/assets/icons/strikethrough.svg'
@@ -135,6 +174,9 @@ export default {
     // CheckboxIcon,
     ArrowLeftIcon,
     ArrowRightIcon,
+    FolderPlusIcon,
+    PlusIcon,
+    TrashIcon,
     // CodeIcon,
     // PenIcon,
     // BoldIcon,
@@ -142,18 +184,30 @@ export default {
     // StrikeThroughIcon
   },
   mixins: [Calendar, File],
-  data () {
+  data() {
     return {
+      editingList: {},
       keysPressed: {},
       // editor: null,
     }
   },
-  methods: {
-    focusEditor () {
-      // this.editor.chain().focus().run()
+  directives: {
+    focus: {
+      inserted(el) {
+        el.focus()
+      }
     }
   },
-  mounted () {
+  methods: {
+    focusEditor() {
+      // this.editor.chain().focus().run()
+    },
+    updateEditStatus(editName) {
+      console.log("updateStatus ",editName)
+      this.$set(this.editingList, [editName], true);
+    }
+  },
+  mounted() {
     // this.editor = new Editor({
     //   extensions: [
     //     Document,
@@ -220,7 +274,7 @@ export default {
     // },
   },
 
-  beforeDestroy () {
+  beforeDestroy() {
     // this.editor.destroy()
   },
 }

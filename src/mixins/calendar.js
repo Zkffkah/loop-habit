@@ -50,6 +50,41 @@ export default {
     getDateGoalStatus(date,habit){
        return habit.stats[date]
     },
+    addHabitGroup(groupName, habitContent){
+      habitContent.push({"groupName":groupName,"items":[]})
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
+    addHabit(habitName, habitGroup){
+      habitGroup.items.push({"name":habitName,"stats":{}})
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
+    removeHabit(habitName, habitGroup){
+      console.log("removeHabit " + habitName +"  "+ habitGroup)
+      const index = habitGroup.items.findIndex(prop => prop.name === habitName)
+      habitGroup.items.splice(index,1)
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
+    changeHabitName(newName, habit){
+      habit.name = newName
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
+    removeGroup(groupName){
+      console.log("removeGroup "+groupName)
+      const index = this.habitContent.findIndex(prop => prop.groupName === groupName)
+      this.habitContent.splice(index,1)
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
+    changeHabitGroupName(newName, habitGroup){
+      console.log("changeHabitGroupName "+newName+habitGroup)
+      habitGroup.groupName = newName
+      this.saveHabitFile()
+      this.loadHabitFile()
+    },
     toggleDateGoalStatus(date,habit){
       if (habit.stats[date] == undefined) {
         habit.stats[date] = true

@@ -228,8 +228,7 @@ const getFilePath = (year) => {
 
 const getDefaultData = () => {
   return JSON.stringify({
-    "content": "",
-    "rating": 0
+    "content": [],
   })
 }
 
